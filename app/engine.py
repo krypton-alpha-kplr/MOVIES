@@ -56,45 +56,70 @@ def get_movie(self, movie_id):
         #Données sont divisées en ensembles d'entraînement (training) et de test (test) en utilisant la méthode randomSplit().
         # with department table in order to check the inconsistent behaviour of randomsplit
         train, test = new_ratings_df.randomSplit([0.8, 0.2])
+        X_new = train["train.movieId","train.title"]
+        y_new = train["train.rating"]
         
-        #Enfin, la méthode privée __train_model() est appelée pour re-entraîner le modèle.
-        self.__train_model()
-            model = load_model(“model.pkl”) ou model = self.model
-            # Ensuite, vous devez appliquer la méthode appropriée pour entraîner le modèle de manière incrémentale, par exemple 
-            model.partial_fit(new_data) ou model.fit(new_data)
-            save_model(model, “model.pkl”)
+        #Enfin, la méthode privée __train_model() est appelée pour re-entraîner le modèle(de manière incrémentale avec les nouvelles données)
+        self.__train_model().partial_fit(X_new, y_new)
+        # Enregistrer le modèle mis à jour dans un fichier
+        #pickle.dump(self.model, open("model.pkl", "wb"))
+
 
     def predict_rating(self, user_id, movie_id):
         # Méthode pour prédire une évaluation pour un utilisateur & un film donnés.
-        # La méthode crée un dataframe rating_df à partir des données (user_id, movie_id) & le transforme en utilisant le modèle pour obtenir les prédictions.
+        # creer un dataframe rating_df à partir des données (user_id, movie_id) & le transforme en utilisant le modèle pour obtenir les prédictions.
+        def predict(self, data):
+        
+        # Prédire les étiquettes avec le modèle
+        rating_df = self.__train_model.predict(user_id, movie_id)
+
+        # Retourner les prédictions
+        return y_pred
+        
         # Si le dataframe de prédiction est vide, la méthode retourne -1, sinon elle retourne la valeur de prédiction.
 
     def recommend_for_user(self, user_id, nb_movies):
-        # Méthode pour obtenir les meilleures recommandations pour un utilisateur donné.méthode permet d'obtenir les meilleures recommandations pour un utilisateur donné.
-Elle prend en paramètres un user_id et un nombre de films nb_movies à recommander.
-La méthode crée un dataframe user_df contenant l'identifiant de l'utilisateur et utilise la méthode recommendForUserSubset() du modèle pour obtenir les recommandations pour cet utilisateur.
-Les recommandations sont ensuite jointes avec le dataframe movies_df pour obtenir les détails des films recommandés.
-Le dataframe résultant est retourné avec les colonnes "title" et d'autres colonnes du dataframe movies_df.
-        ...
+        # Méthode pour obtenir les meilleures recommandations pour un utilisateur donné.
+        # Elle prend en paramètres un user_id et un nombre de films nb_movies à recommander.
+        # Méthode crée un dataframe user_df contenant l'identifiant de l'utilisateur et utilise la méthode recommendForUserSubset() du modèle pour obtenir les recommandations pour cet utilisateur.
+        
+        # Les recommandations sont ensuite jointes avec le dataframe movies_df pour obtenir les détails des films recommandés.
+        
+        # Le dataframe résultant est retourné avec les colonnes "title" et d'autres colonnes du dataframe movies_df.
+
 
     def __train_model(self):
-        # Méthode privée pour entraîner le modèle avec ALS.méthode privée permet d'entraîner le modèle avec l'algorithme ALS (Alternating Least Squares).
-Elle utilise les paramètres maxIter et regParam définis dans l'initialisation de la classe pour créer une instance de l'algorithme ALS.
-Ensuite, le modèle est entraîné en utilisant le dataframe training.
-La méthode privée __evaluate() est appelée pour évaluer les performances du modèle.
-        ...
+        # Méthode privée pour entraîner le modèle avec l'algorithme ALS (Alternating Least Squares).
+        #Elle utilise les paramètres maxIter et regParam définis dans l'initialisation de la classe pour créer une instance de l'algorithme ALS.
+        als = ALS(maxIter=5,
+          regParam=0.01,
+          implicitPrefs=False,
+          userCol="userId",
+          itemCol="movieId",
+          ratingCol="rating",
+          coldStartStrategy="drop"
+          #, nonnegative=True
+          )
+        # Ensuite, le modèle est entraîné en utilisant le dataframe training.
+        with T():
+            model = als.fit(trainingDF)
+        # La méthode privée __evaluate() est appelée pour évaluer les performances du modèle.
+        self.__evaluate()
 
     def __evaluate(self):
-        # Méthode privée pour évaluer le modèle en calculant l'erreur quadratique moyenne.méthode privée permet d'évaluer le modèle en calculant l'erreur quadratique moyenne (RMSE - Root-mean-square error).
-Elle utilise le modèle pour prédire les évaluations sur le dataframe test.
-Ensuite, elle utilise l'évaluateur de régression pour calculer le RMSE en comparant les prédictions avec les vraies évaluations.
-La valeur de RMSE est stockée dans la variable rmse de la classe et affichée à l'écran.
-        ...
+        # Méthode privée pour évaluer le modèle en calculant l'erreur quadratique moyenne(RMSE - Root-mean-square error).
+        
+        # Elle utilise le modèle pour prédire les évaluations sur le dataframe test.
+        
+        # Ensuite, elle utilise l'évaluateur de régression pour calculer le RMSE en comparant les prédictions avec les vraies évaluations.
+        # La valeur de RMSE est stockée dans la variable rmse de la classe et affichée à l'écran.
+
 
     def __init__(self, sc, movies_set_path, ratings_set_path):
-        # Méthode d'initialisation pour charger les ensembles de données et entraîner le modèle.méthode d'initialisation est appelée lors de la création d'une instance de la classe RecommendationEngine.
-Elle prend en paramètres le contexte Spark (sc), le chemin vers l'ensemble de données de films (movies_set_path) et le chemin vers l'ensemble de données d'évaluations (ratings_set_path).
-La méthode initialise le contexte SQL à partir du contexte Spark, charge les données des ensembles de films et d'évaluations à partir des fichiers CSV spécifiés, définit le schéma des données, effectue diverses opérations de traitement des données et entraîne le modèle en utilisant la méthode privée __train_model().
+        # Méthode d'initialisation pour charger les ensembles de données & entraîner le modèle.
+        # est appelée lors de la création d'une instance de la classe RecommendationEngine.
+        # Elle prend en paramètres le contexte Spark (sc), le chemin vers l'ensemble de données de films (movies_set_path) & le chemin vers l'ensemble de données d'évaluations (ratings_set_path).
+        # La méthode initialise le contexte SQL à partir du contexte Spark, charge les données des ensembles de films & d'évaluations à partir des fichiers CSV spécifiés, définit le schéma des données, effectue diverses opérations de traitement des données et entraîne le modèle en utilisant la méthode privée __train_model().
 
 
 
