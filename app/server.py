@@ -24,8 +24,7 @@ import app.py
 
 #Créez un objet SparkConf :
 conf = SparkConf().setAppName("movie_recommendation-server")
-    ```
-    
+
 # 3. Initialisez le contexte Spark :
 sc = SparkContext(conf=conf, pyFiles=['engine.py', 'app.py'])
 
