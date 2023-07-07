@@ -6,18 +6,18 @@ FROM spark:3.4.0
 # Définir le répertoire de travail
 WORKDIR /app
 
+# Copier les fichiers de l'application dans le conteneur
+COPY ./app /app
 COPY ./requirements.txt /app/requirements.txt
 
 # Installer les dépendances de l'application
 # RUN apt-get update && apt-get install -y python3 python3-pip
-RUN 
 
 # Installer les dépendances de l'application
 #RUN pip3 install -r requirements.txt
-RUN pip install -r requirements.txt
+#RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r workspace/MOVIES/requirements.txt
 
-# Copier les fichiers de l'application dans le conteneur
-#COPY . /app
 COPY . .
 
 # Exposer le port utilisé par l'application

@@ -1,3 +1,11 @@
+
+#       ENGine.PY
+
+#!pip install flask
+#! pip install findspark
+#!pip install pyspark
+
+
 #1: Importation des bibliothèques nécessaires
 from pyspark.sql.types import *
 from pyspark.sql.functions import explode, col
@@ -25,28 +33,28 @@ class RecommendationEngine:
         # sinon elle retourne False.
         else : return False
 
-def get_movie(self, movie_id):
+    def get_movie(self, movie_id):
         # Méthode pour obtenir un film
         #Si movie_id est None, la méthode retourne un échantillon aléatoire d'un film à partir du dataframe best_movies_df.
         n=1         # nombres d'éléments de l'échantillon
-        if movie_id==None : film=best_movies_df[sample(1:nrow(best_movies_df),n), ]
+        if movie_id==None : film = best_movies_df.sample(n) # film=best_movies_df[sample(1:nrow(best_movies_df),n), ]
         # Sinon, elle filtre le dataframe movies_df pour obtenir le film correspondant à movie_id.
         else:film=movies_df.filter(movies_df.movieId(movie_id))
         #film=movies_df[movies_id]
         # Méthode pour obtenir les évaluations d'un utilisateur
         film=movies_df.filter(movies_df.userId(user_id))
         #La méthode retourne un dataframe contenant les informations du film (colonne "movieId" et "title").
-        return :
+        return (
             moviesDF.filter(moviesDF.movieID(movie_id) , moviesDF.title \
                 .groupBy(col("movieId"),col("title").orderBy("title", ascending=False) ) )
-
+        )
 
     def get_ratings_for_user(self, user_id):
         # Méthode pour obtenir les évaluations d'un utilisateur
         #Elle prend en paramètre un user_id et filtre le dataframe ratings_df pour obtenir les évaluations correspondantes à l'utilisateur.
         rat=ratings_df.filter(ratings_df.userId(user_id) )
         # La méthode retourne un dataframe contenant les évaluations de l'utilisateur (colonnes "movieId", "userId" et "rating").
-        return:rat
+        return(rat)
 
     def add_ratings(self, user_id, ratings):
         # Méthode pour ajouter de nouvelles évaluations et re-entraîner le modèle. au modèle & re-entraîner le modèle.
@@ -64,19 +72,18 @@ def get_movie(self, movie_id):
         # Enregistrer le modèle mis à jour dans un fichier
         #pickle.dump(self.model, open("model.pkl", "wb"))
 
-
     def predict_rating(self, user_id, movie_id):
         # Méthode pour prédire une évaluation pour un utilisateur & un film donnés.
         # creer un dataframe rating_df à partir des données (user_id, movie_id) & le transforme en utilisant le modèle pour obtenir les prédictions.
-        def predict(self, data):
-        
         # Prédire les étiquettes avec le modèle
         rating_df = self.__train_model.predict(user_id, movie_id)
+        # Retourner Predictions: Si le dataframe de prédiction est vide, la méthode retourne -1, sinon elle retourne la valeur de prédiction.
+        if (len(rating_df)>=0) : return (-1)
+        else : return (rating_df)
 
-        # Retourner les prédictions
-        return y_pred
-        
-        # Si le dataframe de prédiction est vide, la méthode retourne -1, sinon elle retourne la valeur de prédiction.
+
+
+
 
     def recommend_for_user(self, user_id, nb_movies):
         # Méthode pour obtenir les meilleures recommandations pour un utilisateur donné.
