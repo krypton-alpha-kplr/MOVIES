@@ -12,15 +12,16 @@ from pyspark.sql.functions import explode, col
 from pyspark.ml.recommendation import ALS
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import SQLContext
+import random
 
-import app.py
+# import app.py
 
 class RecommendationEngine:
 
 #méthode de creation nouvel utilisateur. prend en paramètre un user_id facultatif pour spécifier l'identifiant de l'utilisateur
     def create_user(self, user_id):
         #Si user_id est None, un nouvel identifiant est généré automatiquement.
-        if user_id==None : new(user_id)
+        if user_id==None : self.max_user_identifier = self.max_user_identifier + 1
         #Si user_id est supérieur à max_user_identifier, max_user_identifier est mis à jour avec la valeur de user_id.
         if user_id>max_user_identifier : max_user_identifier=user_id
         # La méthode retourne l'identifiant de l'utilisateur créé ou mis à jour.
@@ -139,7 +140,6 @@ class RecommendationEngine:
         print("Root-mean-square error = " + str(rmse))
 
 
-
         # Méthode d'initialisation pour charger les ensembles de données & entraîner le modèle.
         # est appelée lors de la création d'une instance de la classe RecommendationEngine.
         # Paramètres le contexte Spark (sc), le chemin vers l'ensemble de données de films (movies_set_path) & le chemin vers l'ensemble de données d'évaluations (ratings_set_path).
@@ -182,7 +182,5 @@ if engine.is_user_known(user_id):
     engine.add_ratings(user_id, ratings)
     prediction = engine.predict_rating(user_id, movie.movieId)
     recommendations = engine.recommend_for_user(user_id, 10)
-
-
 
 
