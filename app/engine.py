@@ -13,6 +13,7 @@ from pyspark.ml.recommendation import ALS
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import SQLContext
 
+import app.py
 
 class RecommendationEngine:
 
@@ -82,54 +83,88 @@ class RecommendationEngine:
         else : return (rating_df)
 
 
-
-
-
     def recommend_for_user(self, user_id, nb_movies):
         # Méthode pour obtenir les meilleures recommandations pour un utilisateur donné.
         # Elle prend en paramètres un user_id et un nombre de films nb_movies à recommander.
         # Méthode crée un dataframe user_df contenant l'identifiant de l'utilisateur et utilise la méthode recommendForUserSubset() du modèle pour obtenir les recommandations pour cet utilisateur.
-        
+        user_df= user_id.union(recommendForUserSubset(user_id) )
         # Les recommandations sont ensuite jointes avec le dataframe movies_df pour obtenir les détails des films recommandés.
-        
+        # select*
+        recommand_df=user_df \
+                .join(movies_df,"movieId") \
+                .select("title","userId", "movieId") \
+                .orderBy("movieId") \
+                .toPandas()
         # Le dataframe résultant est retourné avec les colonnes "title" et d'autres colonnes du dataframe movies_df.
-
+        return recommand_df
 
     def __train_model(self):
         # Méthode privée pour entraîner le modèle avec l'algorithme ALS (Alternating Least Squares).
         #Elle utilise les paramètres maxIter et regParam définis dans l'initialisation de la classe pour créer une instance de l'algorithme ALS.
         als = ALS(maxIter=5,
           regParam=0.01,
-          implicitPrefs=False,
+          #, implicitPrefs=False,
           userCol="userId",
           itemCol="movieId",
           ratingCol="rating",
-          coldStartStrategy="drop"
+          #coldStartStrategy="drop"
           #, nonnegative=True
           )
         # Ensuite, le modèle est entraîné en utilisant le dataframe training.
-        with T():
-            model = als.fit(trainingDF)
+        #with T():
+        #    model = als.fit(trainingDF)
+        model = als.fit(self.ratings_df)
         # La méthode privée __evaluate() est appelée pour évaluer les performances du modèle.
-        self.__evaluate()
+        self.__evaluate(model)
+        # retourne le modèle entraîné
+        return model
+
 
     def __evaluate(self):
-        # Méthode privée pour évaluer le modèle en calculant l'erreur quadratique moyenne(RMSE - Root-mean-square error).
-        
+        # Méthode privée pour évaluer le modèle en calculant l'erreur quadratique moyenne(RMSE,Root-mean-square error)
         # Elle utilise le modèle pour prédire les évaluations sur le dataframe test.
         
         # Ensuite, elle utilise l'évaluateur de régression pour calculer le RMSE en comparant les prédictions avec les vraies évaluations.
+        from pyspark.ml.evaluation import RegressionEvaluator
+        # Define evaluator as RMSE and print length of evaluator
+        evaluator = RegressionEvaluator(
+           metricName="rmse",
+           labelCol="rating",
+           predictionCol="prediction")
+        #print ("Num models to be tested: ", len(param_grid))
         # La valeur de RMSE est stockée dans la variable rmse de la classe et affichée à l'écran.
+        #rmse=rmse.union(evaluator)
+        rmse = evaluator.evaluate(predictions)
+        # Lower values of RMSE indicate better fit
+        print("Root-mean-square error = " + str(rmse))
 
 
-    def __init__(self, sc, movies_set_path, ratings_set_path):
+
         # Méthode d'initialisation pour charger les ensembles de données & entraîner le modèle.
         # est appelée lors de la création d'une instance de la classe RecommendationEngine.
-        # Elle prend en paramètres le contexte Spark (sc), le chemin vers l'ensemble de données de films (movies_set_path) & le chemin vers l'ensemble de données d'évaluations (ratings_set_path).
-        # La méthode initialise le contexte SQL à partir du contexte Spark, charge les données des ensembles de films & d'évaluations à partir des fichiers CSV spécifiés, définit le schéma des données, effectue diverses opérations de traitement des données et entraîne le modèle en utilisant la méthode privée __train_model().
-
-
-
+        # Paramètres le contexte Spark (sc), le chemin vers l'ensemble de données de films (movies_set_path) & le chemin vers l'ensemble de données d'évaluations (ratings_set_path).
+    def __init__(self, sc, movies_set_path, ratings_set_path):
+        # La méthode initialise le contexte SQL à partir du contexte Spark,
+        #  charge les données des ensembles de films & d'évaluations à partir des fichiers CSV spécifiés,
+        #  définit le schéma des données,
+        #  effectue diverses opérations de traitement des données
+        # & entraîne le modèle en utilisant la méthode privée __train_model().
+        
+        # initialise le contexte SQL à partir du contexte Spark
+        self.spark = SparkSession(sc)
+        # charge les données des ensembles de films & d'évaluations à partir des fichiers CSV spécifiés
+        self.movies_df = self.spark.read.csv(movies_set_path, header=True)
+        self.ratings_df = self.spark.read.csv(ratings_set_path, header=True)
+        # définit le schéma des données
+        self.movies_df = self.movies_df.withColumn("movieId", self.movies_df["movieId"].cast("int"))
+        self.ratings_df = self.ratings_df.withColumn("userId", self.ratings_df["userId"].cast("int"))
+        self.ratings_df = self.ratings_df.withColumn("movieId", self.ratings_df["movieId"].cast("int"))
+        self.ratings_df = self.ratings_df.withColumn("rating", self.ratings_df["rating"].cast("float"))
+        # effectue diverses opérations de traitement des données
+        self.movies_df = self.movies_df.dropna()
+        self.ratings_df = self.ratings_df.dropna()
+        # entraîne le modèle en utilisant la méthode privée __train_model()
+        self.model = self.__train_model()
 
 
 # Création d'une instance de la classe RecommendationEngine

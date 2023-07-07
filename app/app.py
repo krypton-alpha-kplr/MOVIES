@@ -27,6 +27,15 @@ from pyspark.sql.session import SparkSession
 sc = SparkContext('local')
 spark = SparkSession(sc) #Acceder aux donnees parralélisées
 
+'''
+#Create SparkSession
+spark = SparkSession.builder
+                    .master("local[1]")
+                    .appName("SparkByExamples.com")
+                    .getOrCreate()
+sc=spark.sparkContext
+'''
+
 # RecommendationEngine (supposons qu'il s'agit d'un fichier engine.py) pour gérer les recommandations.
 #import engine.py
 
