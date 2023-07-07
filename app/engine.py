@@ -151,7 +151,8 @@ class RecommendationEngine:
         # & entraîne le modèle en utilisant la méthode privée __train_model().
         
         # initialise le contexte SQL à partir du contexte Spark
-        self.spark = SparkSession(sc)
+        #self.spark = SparkSession(sc)
+        self.spark = SQLContext(sc).SparkSession(sc)
         # charge les données des ensembles de films & d'évaluations à partir des fichiers CSV spécifiés
         self.movies_df = self.spark.read.csv(movies_set_path, header=True)
         self.ratings_df = self.spark.read.csv(ratings_set_path, header=True)

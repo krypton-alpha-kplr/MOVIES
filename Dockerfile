@@ -5,7 +5,7 @@ FROM spark:3.4.0
 
 
 # Installer les dépendances de l'application
-# RUN apt-get update && apt-get install -y python3 python3-pip
+RUN apt-get update && apt-get install -y python3 python3-pip
 
 
 # Définir le répertoire de travail
@@ -22,8 +22,7 @@ RUN pip3 install -r requirements.txt
 RUN pip install --no-cache-dir -r workspace/MOVIES/requirements.txt
 # RUN sed -i "s/localhost/$(curl http://checkip.amazonaws.com)/g" static/index.js
 
-
-COPY . .
+# COPY . .
 
 # Exposer le port utilisé par l'application
 #EXPOSE 8080
