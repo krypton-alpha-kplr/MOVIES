@@ -23,17 +23,17 @@ class RecommendationEngine:
         #Si user_id est None, un nouvel identifiant est généré automatiquement.
         if user_id==None : self.max_user_identifier = self.max_user_identifier + 1
         #Si user_id est supérieur à max_user_identifier, max_user_identifier est mis à jour avec la valeur de user_id.
-        if user_id>max_user_identifier : max_user_identifier=user_id
+        elif user_id>self.max_user_identifier : self.max_user_identifier=user_id
         # La méthode retourne l'identifiant de l'utilisateur créé ou mis à jour.
-        return user_id
+        return self.max_user_identifier
 
 # méthode permet de vérifier si un utilisateur est connu.méthode permet de vérifier si un utilisateur est connu.
     def is_user_known(self, user_id) :
         # retourne True si l'utilisateur est connu (c'est-à-dire si user_id est différent de None & inférieur ou égal à max_user_identifier),
-        if (user_id!=None ) & user_id<=max_user_identifier:
+        if (user_id!=None ) and user_id<=self.max_user_identifier:
             return True
         # sinon elle retourne False.
-        else : return False
+        #else : return False
 
     def get_movie(self, movie_id):
         # Méthode pour obtenir un film

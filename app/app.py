@@ -1,13 +1,11 @@
-
 # APP.PY
 
-!pip install flask
-!pip install findspark
-! pip install pyspark
-
+#!pip install flask
+#!pip install findspark
+#! pip install pyspark
 
 # Flask et Blueprint pour créer l'application web.
-from flask import Flask
+from flask import Flask, request
 from flask import Blueprint
 
 # render_template pour charger les modèles de templates.
@@ -17,6 +15,8 @@ from flask import render_template
 import json
 # findspark pour trouver et initialiser Spark.
 import findspark
+# Initialisez Spark :
+findspark.init()
 
 #SparkContext et SparkSession pour travailler avec Spark.
 import pyspark
@@ -36,35 +36,40 @@ sc=spark.sparkContext
 '''
 
 # importer RecommendationEngine (supposons qu'il s'agit d'un fichier engine.py) pour gérer les recommandations.
-import engine.py
+#import engine.py
+from engine import RecommendationEngine
 
 # Créez un Blueprint Flask :
 # app = Flask(__name__)
 main = Blueprint('main', __name__)
 
-# Initialisez Spark :
-findspark.init()
 
 # Définissez la route principale ("/") :
 @main.route("/", methods=["GET", "POST", "PUT"])
 def home():
     return render_template("index.html")
 
+@main.route("/movies", defaults = { "movie_id": None })
+
 # Définissez la route pour récupérer les détails d'un film :
 @main.route("/movies/<int:movie_id>", methods=["GET"])
 def get_movie(movie_id):
+    print("Get a movie %s" % (movie_id))
     # Code pour récupérer les détails du film avec l'id spécifié
-    df_m=movies_df(movie_id)
+    movie=recommendation_engine.get_movie(movie_id)
     # et renvoyer les données au format JSON
-    return df_m.to_json(orient="records")
+    return movie.toPandas().to_json(orient="records")
 
+@main.route("/newratings", defaults = { "user_id": None }, methods = ["POST"])
 #6. Définissez la route pour ajouter de nouvelles évaluations pour les films : 
 @main.route("/newratings/<int:user_id>", methods=["POST"])
 def new_ratings(user_id):
     # Code pour vérifier si l'utilisateur existe déjà
-    if (is_user_known(self, user_id) ==False ):
+    print("User {} adds more ratings for movies.".format(user_id))
+    new_user = False
+    if (recommendation_engine.is_user_known(user_id) ==False ):
         # Si l'utilisateur n'existe pas, créez-le
-        user_id=new(user_id)
+        new_user=True
     # Récupérez les évaluations depuis la requête et ajoutez-les au moteur de recommandation
     get_ratings_for_user(self, user_id)
     # Renvoyez l'identifiant de l'utilisateur si c'est un nouvel utilisateur, sinon renvoyez une chaîne vide

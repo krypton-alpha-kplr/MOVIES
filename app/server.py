@@ -1,7 +1,6 @@
 
 # 03_Creation_de_server.py.md
 
-
 # Importez les bibliothèques nécessaires :
 # time pour la gestion du temps.
 import time
@@ -14,13 +13,14 @@ import os
 # cheroot.wsgi pour le serveur WSGI CherryPy.
 import cheroot.wsgi
 # SparkContext et SparkConf pour travailler avec Spark.
-from pyspark.context import SparkContext
-import SparkConf
+#from pyspark.context import SparkContext
+from pyspark import SparkConf
 # SparkSession pour créer une session Spark.
 sc = SparkContext('local')
 spark = SparkSession(sc) #Acceder aux donnees parralélisées
 # create_app (supposons qu'il s'agit d'un fichier app.py) pour créer l'application Flask.
 import app.py
+#from app import create_app
 
 #Créez un objet SparkConf :
 conf = SparkConf().setAppName("movie_recommendation-server")
